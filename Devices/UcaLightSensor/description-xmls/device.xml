@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<root xmlns="urn:schemas-upnp-org:device-1-0">
+  <specVersion>
+    <major>1</major>
+    <minor>0</minor>
+  </specVersion>
+
+  <device>
+    <deviceType>urn:schemas-upnp-org:device:SensorManagement:1</deviceType>
+    <friendlyName>The Sensor Light</friendlyName>
+    <manufacturer>Comarch</manufacturer>
+    <modelName>Sensor Dimmable Light</modelName>
+    <UDN>uuid:6eaa4ac9-9536-441e-853f-9adde05d6166</UDN>
+    
+    <serviceList>
+      <service>
+        <serviceType>urn:schemas-upnp-org:service:SensorTransportGeneric:1</serviceType>
+        <serviceId>urn:upnp-org:serviceId:SensorTransportGeneric:1</serviceId>
+        <SCPDURL>/transport.xml</SCPDURL>
+        <controlURL>/transport/control</controlURL>
+        <eventSubURL></eventSubURL>
+      </service>
+      <service>
+        <serviceType>urn:schemas-upnp-org:service:ConfigurationManagement:2</serviceType>
+        <serviceId>urn:upnp-org:serviceId:ConfigurationManagement:1</serviceId>
+        <SCPDURL>/configmgmt.xml</SCPDURL>
+        <controlURL>/configmgmt/control</controlURL>
+        <eventSubURL></eventSubURL>
+      </service>
+    </serviceList>
+  </device>
+</root>

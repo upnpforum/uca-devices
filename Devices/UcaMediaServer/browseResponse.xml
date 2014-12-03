@@ -1,0 +1,45 @@
+<DIDL-Lite xmlns:dc="http://purl.org/dc/elements/1.1/"
+           xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"
+           xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/">
+
+    <item id="item1" parentID="0" restricted="true">
+        <dc:title>Big Buck Bunny</dc:title>
+        <dc:date>2014-02-26</dc:date>
+        <upnp:class>object.item.imageItem.photo</upnp:class>
+        <res protocolInfo="http-get:*:video/webm:*" size="20000">
+            http://clips.vorwaerts-gmbh.de/big_buck_bunny.webm
+        </res>
+    </item>
+    <item id="item2" parentID="0" restricted="true">
+        <dc:title>Elephant's Dream</dc:title>
+        <dc:date>2014-02-26</dc:date>
+        <upnp:class>object.item.imageItem.photo</upnp:class>
+        <res protocolInfo="http-get:*:video/webm:*" size="20000">
+            http://video.webmfiles.org/elephants-dream.webm
+        </res>
+    </item>
+    <item id="item3" parentID="0" restricted="true">
+        <dc:title>Sintel</dc:title>
+        <dc:date>2014-02-26</dc:date>
+        <upnp:class>object.item.imageItem.photo</upnp:class>
+        <res protocolInfo="http-get:*:video/mpeg:*" size="20000">
+            http://media.w3.org/2010/05/sintel/trailer.mp4
+        </res>
+    </item>
+    <item id="item5" parentID="0" restricted="true">
+        <dc:title>Sample mp3</dc:title>
+        <dc:date>2014-02-26</dc:date>
+        <upnp:class>object.item.imageItem.photo</upnp:class>
+        <res protocolInfo="http-get:*:audio/mp3:*" size="20000">
+            http://tonycuffe.com/mp3/girlwho.mp3
+        </res>
+    </item>
+    <item id="item4" parentID="0" restricted="true">
+        <dc:title>Twitch</dc:title>
+        <dc:date>2014-02-26</dc:date>
+        <upnp:class>object.item.imageItem.photo</upnp:class>
+        <res protocolInfo="http-get:*:video/webm:*" size="20000">
+            http://video7.arn01.hls.twitch.tv/hls2/twitchplayspokemon_8762704112_70870618/source/index.m3u8?token=id=8201741320624693414,bid=8762704112,exp=1394290501,node=video7-1.arn01.hls.justin.tv,nname=video7.arn01,fmt=source&amp;amp;sig=6c3d7fc4056e910ccae9734e0e7b678c9462508c
+        </res>
+    </item>
+</DIDL-Lite>

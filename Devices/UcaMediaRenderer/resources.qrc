@@ -1,0 +1,8 @@
+<RCC>
+    <qresource>
+        <file>qml/UcaMediaRenderer/main.qml</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>settings.ini</file>
+    </qresource>
+</RCC>

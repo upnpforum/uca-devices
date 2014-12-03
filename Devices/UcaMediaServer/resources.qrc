@@ -1,0 +1,7 @@
+<RCC>
+    <qresource>
+        <file>qml/UcaMediaServer/main.qml</file>
+        <file>settings.ini</file>
+        <file>browseResponse.xml</file>
+    </qresource>
+</RCC>

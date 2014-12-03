@@ -1,0 +1,11 @@
+Building new package:
+=====================
+
+0. run qmake (it will generate the makefile, which is required later)
+1. go to 'debian' directory and update all text files there;
+2. return to this directory and type:
+
+  dpkg-buildpackage -b
+
+3. if the build was succesful a .deb package will be created in the directory
+   above this one

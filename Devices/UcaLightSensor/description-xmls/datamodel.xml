@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UPnP>
+  <SensorMgt>
+
+    <SensorEvents Type="string" Access="readOnly" EventOnChange="1" AlarmOnChange="1">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+    &lt;SensorEvents
+        xmlns=&quot;urn:schemas-upnp-org:smgt:sdmevent&quot;
+        xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+        xsi:schemaLocation=&quot;urn:schemas-upnp-org:smgt:sdmevent
+        http://www.upnp.org/schemas/smgt/sdmevent-v1.xsd&quot;&gt;
+    &lt;/SensorEvents&gt;
+    </SensorEvents>
+    <SensorCollectionsNumberOfEntries Type="int" Access="readOnly" EventOnChange="0">1</SensorCollectionsNumberOfEntries>
+
+    <SensorCollections Access="readOnly" EventOnChange="0">
+      <Instance id="1" Access="readOnly">
+
+        <CollectionID Type="string" Access="readOnly" EventOnChange="0">collection01</CollectionID>
+        <CollectionType Type="string" Access="readOnly" EventOnChange="0">urn:upnp-org:smgt-st:light:upnp-org:upnplight:Comarch:CloudLight:CloudLightDemo:id001</CollectionType>
+        <CollectionFriendlyName Type="string" Access="readWrite" EventOnChange="0">Cloud Light Sensor</CollectionFriendlyName>
+        <CollectionInformation Type="string" Access="readOnly" EventOnChange="0">Simple PoC Application</CollectionInformation>
+        <CollectionUniqueIdentifier Type="string" Access="readOnly" EventOnChange="0">collection01-01</CollectionUniqueIdentifier>
+        <CollectionSpecific/>
+        <SensorsNumberOfEntries Type="int" Access="readOnly" EventOnChange="0">2</SensorsNumberOfEntries>
+        <Sensors Access="readOnly" EventOnChange="0">
+
+          <!-- DIMMABLE LIGHT -->
+
+          <Instance id="1" Access="readOnly">
+
+            <SensorID Type="string" Access="readOnly" EventOnChange="0">sensor01</SensorID>
+            <SensorType Type="string" Access="readOnly" EventOnChange="0">urn:upnp-org:smgt-st:light:upnp-org:upnplight:Comarch:CloudLightDimming:setting/status</SensorType>
+            <SensorUniqueIdentifier Type="string" Access="readOnly" EventOnChange="0">sensor01-01</SensorUniqueIdentifier>
+            <SensorUpdateRequest Type="int" Access="readWrite" EventOnChange="0">0</SensorUpdateRequest>
+            <SensorPollingInterval Type="int" Access="readWrite" EventOnChange="0">0</SensorPollingInterval>
+            <SensorReportChangeOnly Type="int" Access="readWrite" EventOnChange="0">1</SensorReportChangeOnly>
+            <SensorRelatedNumberOfEntries Type="int" Access="readOnly" EventOnChange="0">1</SensorRelatedNumberOfEntries>
+            <SensorGroupsNumberOfEntries Type="int" Access="readOnly" EventOnChange="0">1</SensorGroupsNumberOfEntries>
+            <SensorDefaultPermissionsNumberOfEntries Type="int" Access="readOnly" EventOnChange="0">1</SensorDefaultPermissionsNumberOfEntries>
+            <SensorURNsNumberOfEntries Type="int" Access="readOnly" EventOnChange="0">2</SensorURNsNumberOfEntries>
+
+            <SensorRelated Access="readOnly" EventOnChange="0">
+              <Instance id="1" Access="readOnly">
+                <SensorPath Type="string" Access="readOnly" EventOnChange="0">SensorCollections/1/Sensor/1</SensorPath>
+              </Instance>
+            </SensorRelated>
+
+            <SensorGroups Access="readWrite" EventOnChange="0">
+              <Instance id="1" Access="readOnly">
+                <SensorGroup Type="string" Access="readOnly" EventOnChange="0">Lighting at Comarch (KRK)</SensorGroup>
+              </Instance>
+            </SensorGroups>
+
+            <SensorDefaultPermissions Access="readWrite" EventOnChange="0">
+              <Instance id="1" Access="readOnly">
+                <SensorDefaultRole Type="string" Access="readOnly" EventOnChange="0">Public</SensorDefaultRole>
+                <SensorDefaultPermissions Type="string" Access="readOnly" EventOnChange="0">smgt:ViewSensor,smgt:ReadSensor,smgt:WriteSensor</SensorDefaultPermissions>
+              </Instance>
+            </SensorDefaultPermissions>
+
+            <SensorSpecific/>
+
+            <SensorURNs Access="readOnly" EventOnChange="0">
+
+              <!-- DIMMING URN -->
+
+              <Instance id="1" Access="readOnly">
+                <SensorURN Type="string" Access="readOnly" EventOnChange="0">urn:upnp-org:smgt-surn:light:upnp-org:brightness:Comarch:CloudLightDimmingDimming:setting/status</SensorURN>
+                <DataItemsNumberOfEntries Type="int" Access="readOnly" EventOnChange="0">1</DataItemsNumberOfEntries>
+                <DataItems Access="readOnly" EventOnChange="0">
+                  <Instance id="1" Access="readOnly">
+                    <Name Type="string" Access="readOnly" EventOnChange="0">Dimming</Name>
+                    <Type Type="string" Access="readOnly" EventOnChange="0">uda:ui4</Type>
+                    <Encoding Type="string" Access="readOnly" EventOnChange="0">ascii</Encoding>
+                    <Description Type="string" Access="readOnly" EventOnChange="0">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+                    &lt;DataItemDescription
+                        xmlns=&quot;urn:schemas-upnp-org:smgt:sdmdid&quot;
+                        xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;
+                        xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+                        xsi:schemaLocation=&quot;urn:schemas-upnp-org:smgt:sdmdid http://www.upnp.org/schemas/smgt/sdmdid.xsd&quot;
+                        itemname=&quot;Brightness&quot; access=&quot;rw&quot;&gt;
+                        &lt;description&gt;
+                                Brightness of light
+                        &lt;/description&gt;
+                    &lt;/DataItemDescription&gt;
+                    </Description>
+                  </Instance>
+                </DataItems>
+              </Instance>
+
+              <!-- SWITCH URN -->
+
+              <Instance id="2" Access="readOnly">
+                <SensorURN Type="string" Access="readOnly" EventOnChange="0">urn:upnp-org:smgt-surn:actuator:upnp-org:switch:Comarch:CloudLightDimmingSwitch:setting/status</SensorURN>
+                <DataItemsNumberOfEntries Type="int" Access="readOnly" EventOnChange="0">1</DataItemsNumberOfEntries>
+                <DataItems Access="readOnly" EventOnChange="0">
+                  <Instance id="1" Access="readOnly">
+                    <Name Type="string" Access="readOnly" EventOnChange="0">Switch</Name>
+                    <Type Type="string" Access="readOnly" EventOnChange="0">uda:boolean</Type>
+                    <Encoding Type="string" Access="readOnly" EventOnChange="0">ascii</Encoding>
+                    <Description Type="string" Access="readOnly" EventOnChange="0">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+                    &lt;DataItemDescription
+                        xmlns=&quot;urn:schemas-upnp-org:smgt:sdmdid&quot;
+                        xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;
+                        xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+                        xsi:schemaLocation=&quot;urn:schemas-upnp-org:smgt:sdmdid http://www.upnp.org/schemas/smgt/sdmdid.xsd&quot;
+                        itemname=&quot;Switch&quot; access=&quot;rw&quot;&gt;
+                        &lt;description&gt;
+                                Switch of a Dimmable Light Device
+                        &lt;/description&gt;
+                    &lt;/DataItemDescription&gt;
+                    </Description>
+                  </Instance>
+                </DataItems>
+              </Instance>
+
+            </SensorURNs>
+          </Instance>
+
+          <!-- TEMPERATURE -->
+
+          <Instance id="2" Access="readOnly">
+
+            <SensorID Type="string" Access="readOnly" EventOnChange="0">sensor02</SensorID>
+            <SensorType Type="string" Access="readOnly" EventOnChange="0">urn:upnp-org:smgt-st:actuator:upnp-org:Temperature_cur:Comarch:CloudLightTemperature:sensor</SensorType>
+            <SensorUniqueIdentifier Type="string" Access="readOnly" EventOnChange="0">sensor02-01</SensorUniqueIdentifier>
+            <SensorUpdateRequest Type="int" Access="readWrite" EventOnChange="0">0</SensorUpdateRequest>
+            <SensorPollingInterval Type="int" Access="readWrite" EventOnChange="0">0</SensorPollingInterval>
+            <SensorReportChangeOnly Type="int" Access="readWrite" EventOnChange="0">1</SensorReportChangeOnly>
+            <SensorRelatedNumberOfEntries Type="int" Access="readOnly" EventOnChange="0">1</SensorRelatedNumberOfEntries>
+            <SensorGroupsNumberOfEntries Type="int" Access="readOnly" EventOnChange="0">1</SensorGroupsNumberOfEntries>
+            <SensorDefaultPermissionsNumberOfEntries Type="int" Access="readOnly" EventOnChange="0">1</SensorDefaultPermissionsNumberOfEntries>
+            <SensorURNsNumberOfEntries Type="int" Access="readOnly" EventOnChange="0">1</SensorURNsNumberOfEntries>
+
+            <SensorRelated Access="readOnly" EventOnChange="0">
+              <Instance id="1" Access="readOnly">
+                <SensorPath Type="string" Access="readOnly" EventOnChange="0">SensorCollections/1/Sensor/1</SensorPath>
+              </Instance>
+            </SensorRelated>
+
+            <SensorGroups Access="readWrite" EventOnChange="0">
+              <Instance id="1" Access="readOnly">
+                <SensorGroup Type="string" Access="readOnly" EventOnChange="0">Temperature at Comarch (KRK)</SensorGroup>
+              </Instance>
+            </SensorGroups>
+
+            <SensorDefaultPermissions Access="readWrite" EventOnChange="0">
+              <Instance id="1" Access="readOnly">
+                <SensorDefaultRole Type="string" Access="readOnly" EventOnChange="0">Public</SensorDefaultRole>
+                <SensorDefaultPermissions Type="string" Access="readOnly" EventOnChange="0">smgt:ViewSensor,smgt:ReadSensor</SensorDefaultPermissions>
+              </Instance>
+            </SensorDefaultPermissions>
+
+            <SensorSpecific/>
+
+            <SensorURNs Access="readOnly" EventOnChange="0">
+
+              <!-- TEMPERATURE URN -->
+
+              <Instance id="1" Access="readOnly">
+                <SensorURN Type="string" Access="readOnly" EventOnChange="0">urn:upnp-org:smgt-surn:acuator:upnp-org:Temperature_cur:Comarch:CloudLightTemperature:status</SensorURN>
+                <DataItemsNumberOfEntries Type="int" Access="readOnly" EventOnChange="0">1</DataItemsNumberOfEntries>
+                <DataItems Access="readOnly" EventOnChange="0">
+                  <Instance id="1" Access="readOnly">
+                    <Name Type="string" Access="readOnly" EventOnChange="0">Temperature at Comarch in Krakow</Name>
+                    <Type Type="string" Access="readOnly" EventOnChange="0">uda:ui4</Type>
+                    <Encoding Type="string" Access="readOnly" EventOnChange="0">ascii</Encoding>
+                    <Description Type="string" Access="readOnly" EventOnChange="0">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+                    &lt;DataItemDescription
+                        xmlns=&quot;urn:schemas-upnp-org:smgt:sdmdid&quot;
+                        xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;
+                        xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+                        xsi:schemaLocation=&quot;urn:schemas-upnp-org:smgt:sdmdid.xsd http://www.upnp.org/schemas/smgt/sdmdid-v1.xsd&quot;
+                        itemname=&quot;Temperature&quot;
+                        access=&quot;read&quot;&gt;
+                        &lt;description&gt;Current temperature sensor&lt;/description&gt;
+                        &lt;measurement
+                            units=&quot;K&quot;
+                            access=&quot;ro&quot;
+                            treatment=&quot;average&quot;
+                            accumulation=&quot;interval&quot;/&gt;
+                    &lt;/DataItemDescription&gt;
+                    </Description>
+                  </Instance>
+                </DataItems>
+              </Instance>
+
+            </SensorURNs>
+
+          </Instance>
+
+        </Sensors>
+      </Instance>
+    </SensorCollections>
+  </SensorMgt>
+</UPnP>
+
+
+
+
+
+
+
+
+
+
+

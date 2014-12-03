@@ -1,0 +1,17 @@
+Source: upnpcloudavpoc
+Section: unknown
+Priority: extra
+Maintainer: Mateusz Belicki <mateusz.belicki@comarch.com>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.4
+Homepage: http://upnp.comarch.com
+#Vcs-Git: git://git.debian.org/collab-maint/upnpcloudavpoc.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/upnpcloudavpoc.git;a=summary
+
+Package: upnpcloudavpoc
+Architecture: any
+Depends: libc6 (>= 2.14), libgcc1 (>= 1:4.1.1), libqt5gui5 (>= 5.0.2), libqt5multimedia5, libqt5network5 (>= 5.0.2), libqt5qml5, libqt5quick5, libqt5xml5 (>= 5.0.2), libstdc++6 (>= 4.4.0), libqt5concurrent5, libqt5core5a, libqt5dbus5, libqt5declarative5, libqt5gui5, libqt5location5, libqt5multimedia5, libqt5multimedia5-plugins, libqt5multimediaquick-p5, libqt5multimediawidgets5, libqt5network5, libqt5qml5, libqt5quick5, libqt5quickparticles5, libqt5quicktest5, libqt5widgets5, libqt5xml5, qt5-default, qt5-qmake, qtdeclarative5-qtmultimedia-plugin, qtdeclarative5-qtquick2-plugin
+#Depends: ${shlibs:Depends}, ${misc:Depends}, libqt5concurrent5, libqt5core5a, libqt5dbus5, libqt5declarative5, libqt5gui5, libqt5location5, libqt5multimedia5, libqt5multimedia5-plugins, libqt5multimediaquick-p5, libqt5multimediawidgets5, libqt5network5, libqt5qml5, libqt5quick5, libqt5quickparticles5, libqt5quicktest5, libqt5widgets5, libqt5xml5, qt5-default, qt5-qmake, qtdeclarative5-qtmultimedia-plugin, qtdeclarative5-qtquick2-plugin
+Conflicts: libqxmpp0
+Description: UPnP Cloud AV Proof of Concept.
+ This package contains two application: UcaMediaRenderer and UcaMediaServer, which are part of UCA AV proof of concept project.

@@ -25,25 +25,21 @@ SOURCES += main.cpp \
     sensorservices.cpp
 
 ! win32 {
-    SOURCES += cmodules/uda.c udastack.cpp
-}
-
-! win32 {
     QMAKE_CFLAGS += -std=c99 \
                     -pthread
 
     PKGCONFIG += gupnp-1.0
     CONFIG += link_pkgconfig
     LIBS += -lglib-2.0 -lgobject-2.0 # this was not needed on Ubuntu 12.04, a bug in .pc?
-    LIBS += -L../UcaStack -lUcaStack
+    LIBS += -L../Stack -lStack
 }
 
 win32 {
     debug {
-        LIBS += -L../UcaStack/debug -lUcaStack
+        LIBS += -L../Stack/debug -lStack
     }
     release {
-        LIBS += -L../UcaStack/release -lUcaStack
+        LIBS += -L../Stack/release -lStack
     }
 }
 
@@ -51,7 +47,6 @@ QT += xml testlib xmlpatterns quick
 
 HEADERS += \
     iupnpstackobserver.h \
-    udastack.h \
     iqgrabber.h \
     devicesettings.h \
     cmodules/uda.h \

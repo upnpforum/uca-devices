@@ -101,7 +101,7 @@ public:
 
     void handleIq(const QXmppIq &incoming);
 
-    void sendEvent(QString serviceId, void *serviceToken, QString variableName, QString value);
+    void sendEvent(EventMessage eventMessage);
     void registerDevice(IUPnPDevice *device);
 
     void start();
@@ -124,6 +124,7 @@ public:
 
 signals:
     void receivedResult(const QString &id, const QXmppIq &iq);
+
 
 private slots:
     void presenceReceived(const QXmppPresence &incoming);

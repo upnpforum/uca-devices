@@ -33,7 +33,7 @@
 #ifndef RENDERINGCONTROLUTILITIES_H
 #define RENDERINGCONTROLUTILITIES_H
 
-#include <UcaStack/ucastack.h>
+#include <Stack/ucastack.h>
 
 extern QString createLastChangedEventValueRCS(const QHash<QString, QString> &variables);
 extern QString createLastChangedEventValueAVT(const QHash<QString, QString> &variables);

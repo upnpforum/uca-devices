@@ -33,7 +33,7 @@
 #include "contentdirectoryservice.h"
 
 #include "cdscdptemplate.h"
-#include <UcaStack/ucautilities.h>
+#include <Stack/ucautilities.h>
 #include <QStringList>
 #include <QStringBuilder>
 #include <QFile>
@@ -44,6 +44,10 @@
 
 static const char *SERVICE_ID = "urn:upnp-org:serviceId:ContentDirectory";
 static const char *SERVICE_TYPE = "urn:schemas-upnp-org:service:ContentDirectory:1";
+
+static const char *TRANSFERIDS_VARNAME = "TransferIDs";
+static const char *SYSTEMUPDATEID_VARNAME = "SystemUpdateID";
+static const char *CONTAINERUPDATEIDS_VARNAME = "ContainerUpdateIDs";
 
 static const QByteArray readXmlFile()
 {
@@ -116,6 +120,18 @@ const QUrl ContentDirectoryService::getEventUrl() const
 const QStringList ContentDirectoryService::getEventedVariableNames() const
 {
     QStringList variables;
+    variables << TRANSFERIDS_VARNAME;
+    variables << SYSTEMUPDATEID_VARNAME;
+    variables << CONTAINERUPDATEIDS_VARNAME;
+    return variables;
+}
+
+const QMap<QString,QString> ContentDirectoryService::getInitialEventVariables() const
+{
+    QMap<QString,QString> variables;
+    variables.insert(SYSTEMUPDATEID_VARNAME,"0");
+    variables.insert(TRANSFERIDS_VARNAME,"0");
+    variables.insert(CONTAINERUPDATEIDS_VARNAME,"0");
     return variables;
 }
 

@@ -1,8 +1,8 @@
 #ifndef SENSORSERVICES_H
 #define SENSORSERVICES_H
 
-#include <UcaStack/iupnpservice.h>
-#include <UcaStack/failable.h>
+#include <Stack/iupnpservice.h>
+#include <Stack/failable.h>
 
 class QDir;
 
@@ -42,6 +42,7 @@ public:
     const QUrl getEventUrl() const { return _eventUrl; }
 
     const QStringList getEventedVariableNames() const { return _variables; }
+    const QMap<QString,QString> getInitialEventVariables() const {QMap<QString,QString> variables; return variables;}
 };
 
 class ConfigurationManagementService : public IUPnPService
@@ -73,6 +74,7 @@ public:
     const QUrl getEventUrl() const { return _eventUrl; }
 
     const QStringList getEventedVariableNames() const { return _variables; }
+    const QMap<QString,QString> getInitialEventVariables() const {QMap<QString,QString> variables; variables.insert("ConfigurationUpdate","");variables.insert("SupportedDataModelsUpdate","");variables.insert("SupportedParametersUpdate",""); return variables;}
 };
 
 #endif // SENSORSERVICES_H

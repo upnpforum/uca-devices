@@ -33,8 +33,8 @@
 #ifndef CONTENTDIRECTORYSERVICE_H
 #define CONTENTDIRECTORYSERVICE_H
 
-#include <UcaStack/failable.h>
-#include <UcaStack/iupnpservice.h>
+#include <Stack/failable.h>
+#include <Stack/iupnpservice.h>
 
 struct CDSItem
 {
@@ -81,6 +81,7 @@ public:
     virtual const QUrl getEventUrl() const;
 
     virtual const QStringList getEventedVariableNames() const;
+    virtual const QMap<QString,QString> getInitialEventVariables() const;
     Failable<bool> handleBrowseDirectChildren( const QHash<QString, QString> &arguments, QMap<QString, QString> &results);
     Failable<bool> handleBrowseMetadata(const QHash<QString, QString> &arguments, QMap<QString, QString> &results);
 };

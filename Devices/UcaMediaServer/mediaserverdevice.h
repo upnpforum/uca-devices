@@ -33,7 +33,7 @@
 #ifndef MEDIASERVERDEVICE_H
 #define MEDIASERVERDEVICE_H
 
-#include <UcaStack/iupnpdevice.h>
+#include <Stack/iupnpdevice.h>
 
 #include "contentdirectoryservice.h"
 #include "connectionmanagerservice.h"

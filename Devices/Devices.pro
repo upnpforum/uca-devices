@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS = qxmpp-0.7.6 \
-          UcaStack \
+          Stack \
           UcaMediaServer \
           UcaMediaRenderer \
           UcaLight \

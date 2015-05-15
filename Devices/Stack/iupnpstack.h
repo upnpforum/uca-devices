@@ -34,19 +34,35 @@
 #define IUPNPSTACK_H
 
 #include "iupnpdevice.h"
+#include "inotifiableservice.h"
+
+struct EventMessage
+{
+    QString serviceId;
+    void *serviceToken;
+    QString variableName;
+    QString value;
+    INotifiableService* serviceToNotify;
+
+    EventMessage(QString serviceId, void *serviceToken, QString variableName, QString value, INotifiableService* serviceToNotify)
+        : serviceId(serviceId), serviceToken(serviceToken), variableName(variableName), value(value), serviceToNotify(serviceToNotify) { }
+    EventMessage() {}
+};
 
 class IUPnPStack
 {
 public:
     virtual ~IUPnPStack() {}
 
-    virtual void sendEvent(QString serviceId, void *serviceToken, QString variableName, QString value) = 0;
+    virtual void sendEvent(EventMessage eventMessage) = 0;
+    void sendEvent(QString serviceId, void *serviceToken, QString variableName, QString value);
     virtual void registerDevice(IUPnPDevice *observer) = 0;
 
     virtual void start() = 0;
     virtual void stop() = 0;
 
     virtual bool isRunning() const = 0;
+
 };
 
 #endif // IUPNPSTACK_H

@@ -41,9 +41,10 @@
 #include <cerrno>
 #include <QException>
 
-static const char *DIMMING_SERV_TYPE     = "urn:schemas-upnp-org:service:Dimming:1";
-static const char *SWITCHPOWER_SERV_TYPE = "urn:schemas-upnp-org:service:SwitchPower:1";
-
+static const char *DIMMING_SERV_TYPE       = "urn:schemas-upnp-org:service:Dimming:1";
+static const char *SWITCHPOWER_SERV_TYPE   = "urn:schemas-upnp-org:service:SwitchPower:1";
+static const char *LOADLEVELSTATUS_VARNAME = "LoadLevelStatus";
+static const char *STATUS_VARNAME          = "Status";
 struct ServiceInfo {
     QString id;
     QString type;
@@ -211,4 +212,32 @@ QMap<QString, QString> SwitchPowerService::handleSOAP
     Q_UNUSED(arguments);
 
     return QMap<QString, QString>();
+}
+
+const QStringList SwitchPowerService::getEventedVariableNames() const
+{
+    QStringList variables;
+    variables << STATUS_VARNAME;
+    return variables;
+}
+
+const QMap<QString,QString> SwitchPowerService::getInitialEventVariables() const
+{
+    QMap<QString,QString> variables;
+    variables.insert(STATUS_VARNAME, QString::number(_enabled));
+    return variables;
+}
+
+const QStringList DimmingService::getEventedVariableNames() const
+{
+    QStringList variables;
+    variables << LOADLEVELSTATUS_VARNAME;
+    return variables;
+}
+
+const QMap<QString,QString> DimmingService::getInitialEventVariables() const
+{
+    QMap<QString,QString> variables;
+    variables.insert(LOADLEVELSTATUS_VARNAME, QString::number(_dimmingLevel));
+    return variables;
 }

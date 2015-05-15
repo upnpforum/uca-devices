@@ -33,10 +33,16 @@
 #include "connectionmanagerservice.h"
 
 #include "cmscdptemplate.h"
-#include <UcaStack/ucautilities.h>
+
+#include <Stack/ucautilities.h>
+
 
 static const char *SERVICE_ID = "urn:upnp-org:serviceId:ConnectionManager";
 static const char *SERVICE_TYPE = "urn:schemas-upnp-org:service:ConnectionManager:1";
+
+static const char *SOURCEPROTOCOLINFO_VARNAME = "SourceProtocolInfo";
+static const char *SINKPROTOCOLINFO_VARNAME = "SinkProtocolInfo";
+static const char *CURRENTCONNECTIONIDS_VARNAME = "CurrentConnectionIDs";
 
 static QDomDocument *buildDescription()
 {
@@ -63,7 +69,7 @@ void ConnectionManagerService::
         handleGetProtocolInfo(QMap<QString, QString> &results)
 {
     results["Source"] = "";
-    results["Sink"] = "http-get:*:video/webm:*";
+    results["Sink"] = "http-get:*:audio/mpeg:*";
 }
 
 void ConnectionManagerService::
@@ -105,7 +111,6 @@ QMap<QString, QString>
     Q_UNUSED(arguments)
 
     _resultBuffer.clear();
-
     if (actionName == "GetProtocolInfo") {
         handleGetProtocolInfo(_resultBuffer);
     } else if (actionName == "GetCurrentConnectionInfo") {
@@ -153,5 +158,17 @@ const QUrl ConnectionManagerService::getEventUrl() const
 const QStringList ConnectionManagerService::getEventedVariableNames() const
 {
     QStringList variables;
+    variables << SOURCEPROTOCOLINFO_VARNAME;
+    variables << SINKPROTOCOLINFO_VARNAME;
+    variables << CURRENTCONNECTIONIDS_VARNAME;
+    return variables;
+}
+
+const QMap<QString,QString> ConnectionManagerService::getInitialEventVariables() const
+{
+    QMap<QString,QString> variables;
+    variables.insert(CURRENTCONNECTIONIDS_VARNAME,"0");
+    variables.insert(SOURCEPROTOCOLINFO_VARNAME,"");
+    variables.insert(SINKPROTOCOLINFO_VARNAME,"http-get:*:video/mp4:*");
     return variables;
 }

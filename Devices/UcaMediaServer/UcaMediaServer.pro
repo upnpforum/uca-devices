@@ -23,14 +23,14 @@ target.path = /usr/bin
 INSTALLS += target
 
 ! win32 {
-    LIBS += -L../UcaStack -lUcaStack
+    LIBS += -L../Stack -lStack
 }
 win32 {
     debug {
-        LIBS += -L../UcaStack/debug -lUcaStack
+        LIBS += -L../Stack/debug -lStack
     }
     release {
-        LIBS += -L../UcaStack/release -lUcaStack
+        LIBS += -L../Stack/release -lStack
     }
 }
 

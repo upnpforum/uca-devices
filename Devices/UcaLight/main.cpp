@@ -37,10 +37,10 @@
 
 #include "devicesettings.h"
 #include "dimmablelight.h"
-#include <UcaStack/ucastack.h>
+#include <Stack/ucastack.h>
 
 #ifndef WIN32
-#include "udastack.h"
+#include <Stack/udastack.h>
 #endif
 
 static const char *APP_NAME = "UcaLight";

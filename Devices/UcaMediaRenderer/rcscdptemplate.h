@@ -133,7 +133,7 @@ static const char *SCDP_TEMPLATE
           "<dataType>ui2</dataType>"
             "<allowedValueRange>"
                 "<minimum>0</minimum>"
-                "<maximum>1</maximum>"
+                "<maximum>9000</maximum>"
                 "<step>1</step>"
             "</allowedValueRange>"
         "</stateVariable>"

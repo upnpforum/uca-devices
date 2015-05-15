@@ -35,12 +35,12 @@
 #include <QtXml/QDomDocument>
 #include <QtXml/QDomElement>
 
-#include <UcaStack/ucautilities.h>
-#include <UcaStack/iupnpstack.h>
-#include <UcaStack/ucastack.h>
+#include <Stack/ucautilities.h>
+#include <Stack/iupnpstack.h>
+#include <Stack/ucastack.h>
 
 #include <QStringBuilder>
-
+#include <QNetworkReply>
 #include "avtscdptemplate.h"
 #include "renderingcontrolutilities.h"
 
@@ -50,7 +50,10 @@ static const char *SERVICE_TYPE = "urn:schemas-upnp-org:service:AVTransport:1";
 static const char *LAST_CHANGED_VARNAME = "LastChange";
 
 static unsigned int INVALID_ID_CODE = 718;
+static unsigned int INVALID_SPEED_CODE = 717;
 static unsigned int INVALID_ARGS_CODE = 402;
+static unsigned int RESOURCE_NOT_FOUND_CODE = 716;
+static unsigned int TRANSITION_NOT_AVAILABLE_CODE = 701;
 
 static const char *TRANSPORT_STATE_STRINGS[]
     = { "STOPPED"
@@ -93,17 +96,20 @@ AVTransportService::AVTransportService(IUPnPStack * const stack)
     , _id(SERVICE_ID)
     , _state(NO_MEDIA_PRESENT)
     , _status(OK)
+    , sentEvent(false)
 {
     _player.setPlaylist(&_playlist);
     _playlist.setPlaybackMode(QMediaPlaylist::Sequential);
     connect(&_player,SIGNAL(stateChanged(QMediaPlayer::State)),this,SLOT(playerStateChanged(QMediaPlayer::State)));
     connect(&_player,SIGNAL(currentMediaChanged(const QMediaContent&)),this,SLOT(currentMediaChanged(const QMediaContent&)));
     _description = buildDescription();
-
-    connect(&_eventTimer, SIGNAL(timeout()), this, SLOT(eventTimerTick()));
-    _eventTimer.start(20);
-
     connect(&_player, SIGNAL(positionChanged(qint64)), this, SLOT(playerPositionChanged(qint64)));
+    qRegisterMetaType<EventMessage>("EventMessage");
+    Q_ASSERT(connect(this, SIGNAL(eventSent(EventMessage)), this, SLOT(onEventSent(EventMessage))));
+    QString ni = QString("NOT_IMPLEMENTED");
+    eventedValueChanged("CurrentRecordQualityMode",ni);
+    eventedValueChanged("TransportState", "STOPPED");
+    _lastStatus = QMediaPlayer::UnknownMediaStatus;
 }
 
 AVTransportService::~AVTransportService()
@@ -148,6 +154,15 @@ const QStringList AVTransportService::getEventedVariableNames() const
     return variables;
 }
 
+const QMap<QString,QString> AVTransportService::getInitialEventVariables() const
+{
+    QMap<QString,QString> variables;
+    QString message
+        = createLastChangedEventValueAVT(_lastChangedNotifications);
+    variables.insert(LAST_CHANGED_VARNAME,message);
+    return variables;
+}
+
 void AVTransportService::notifyChatListeners(const QString &message)
 {
     UcaStack *stack = static_cast<UcaStack *>(_stack);
@@ -171,6 +186,28 @@ static bool checkInstanceID( const QHash<QString, QString> &arguments
         QString message
                 = QString("Invalid InstanceID: '%1', expected '0'.").arg(id);
         utilities::fillWithErrorMessage(results, INVALID_ID_CODE, message);
+        return false;
+    }
+
+    return true;
+}
+
+static bool checkSpeed(const QHash<QString, QString> &arguments
+                       , QMap<QString, QString> &results)
+{
+    if (arguments.contains("Speed") == false) {
+        QString message("Play speed not supported");
+        utilities::fillWithErrorMessage(results, INVALID_ARGS_CODE, message);
+        return false;
+    }
+
+    QString speed = arguments["Speed"];
+    bool ok;
+    speed.toInt(&ok);
+    if (!ok) {
+        QString message
+                = QString("Invalid Speed: '%1', expected '0'.").arg(speed);
+        utilities::fillWithErrorMessage(results, INVALID_SPEED_CODE, message);
         return false;
     }
 
@@ -201,6 +238,25 @@ static QString createAVTransportUriChangeMessage
     QString message = QString("Track has been changed to '%2' by %1.")
                         .arg(controllerName, trackName);
     return message;
+}
+
+static bool checkResource(QUrl url, QMap<QString, QString> &results)
+{
+    QNetworkRequest request(url);
+    QNetworkAccessManager networkManager;
+    QNetworkReply *reply = networkManager.head(request);
+
+    QEventLoop ev;
+    QObject::connect(reply, SIGNAL(finished()), &ev, SLOT(quit()));
+    ev.exec();
+
+    QNetworkReply::NetworkError er = reply->error();
+    if(er == QNetworkReply::ContentNotFoundError)
+    {
+        utilities::fillWithErrorMessage(results, RESOURCE_NOT_FOUND_CODE, "Resource not found");
+        return false;
+    }
+    return true;
 }
 
 Failable<bool>
@@ -239,6 +295,11 @@ Failable<bool>
         return true;
     }
 
+    if(!checkResource(url, results))
+    {
+        return true;
+    }
+
     bool wasPlaying = _state == PLAYING;
 
     stop();
@@ -251,14 +312,17 @@ Failable<bool>
     _playlist.setCurrentIndex(0);
 
     eventedValueChanged("NumberOfTracks", QString::number(1));
+    eventedValueChanged("AVTransportURI",arguments["CurrentURI"] );
 
-    if (wasPlaying) play();
+    if (wasPlaying) play(results);
 
     const QString trackName = getTrackNameFormMetadata(metadata);
     const QString controllerName = arguments[ARGKEY_SENDER_NAME];
     const QString message
             = createAVTransportUriChangeMessage(trackName, controllerName);
     notifyChatListeners(message);
+
+    sendLastChangedEvent();
 
     return true;
 }
@@ -299,9 +363,18 @@ Failable<bool>
         return true;
     }
 
+    if(!checkResource(url, results))
+    {
+        return true;
+    }
+
     _metadataForPlayer.insert(url.toString(), metadata);
     _playlist.addMedia(url);
     eventedValueChanged("NumberOfTracks", QString::number(_playlist.mediaCount()));
+    eventedValueChanged("NextAVTransportURI",arguments["NextURI"] );
+    eventedValueChanged("NextAVTransportURIMetaData", metadata);
+
+    sendLastChangedEvent();
 
     return true;
 }
@@ -366,15 +439,21 @@ Failable<bool>
         playMedium = "NETWORK";
     }
 
-    results["NrTracks"] = nrTracks;
-    results["MediaDuration"] = mediaDuration;
-    results["CurrentURI"] = currentUri.toHtmlEscaped();
-    results["CurrentURIMetadata"] = currentUriMetadata.toHtmlEscaped();
-    results["NextURI"] = nextUri.toHtmlEscaped();
-    results["NextURIMetadata"] = nextUriMetadata.toHtmlEscaped();
-    results["PlayMedium"] = playMedium;
-    results["RecordMedium"] = recordMedium;
-    results["WriteStatus"] = writeStatus;
+    results["_NrTracks"] = nrTracks;
+    results["__MediaDuration"] = mediaDuration;
+    results["___CurrentURI"] = currentUri.toHtmlEscaped();
+    results["____CurrentURIMetaData"] = currentUriMetadata.toHtmlEscaped();
+    results["_____NextURI"] = nextUri.toHtmlEscaped();
+    results["______NextURIMetaData"] = nextUriMetadata.toHtmlEscaped();
+    results["_______PlayMedium"] = playMedium;
+    results["________RecordMedium"] = recordMedium;
+    results["_________WriteStatus"] = writeStatus;
+
+    QMap<QString, QString>::const_iterator it = results.constBegin();
+    for (; it != results.constEnd(); it++) {
+                qDebug() << it.key();
+    }
+
 
     return true;
 }
@@ -384,9 +463,9 @@ Failable<bool>
                                               ) const {
     int playspeed = 1;
 
-    results["CurrentTransportState"] = transportStateToString(_state);
-    results["CurrentTransportStatus"] = transportStatusToString(_status);
-    results["CurrentSpeed"] = QString::number(playspeed);
+    results["_CurrentTransportState"] = transportStateToString(_state);
+    results["__CurrentTransportStatus"] = transportStatusToString(_status);
+    results["___CurrentSpeed"] = QString::number(playspeed);
 
     return true;
 }
@@ -400,6 +479,7 @@ Failable<bool>
     QString trackDuration("00:00:00");
     QString trackMetadata("");
     QString trackUri("");
+    QString track("0");
     QString relTime("00:00:00");
     QString absTime("00:00:00");
     QString relCount("0");
@@ -414,13 +494,14 @@ Failable<bool>
         absCount = relCount;
     }
 
-    results["TrackDuration"] = trackDuration;
-    results["TrackMetaData"] = trackMetadata;
-    results["TrackURI"] = trackUri;
-    results["RelTime"] = relTime;
-    results["AbsTime"] = absTime;
-    results["RelCount"] = relCount;
-    results["AbsCount"] = absCount;
+    results["_Track"] = track;
+    results["__TrackDuration"] = trackDuration;
+    results["___TrackMetaData"] = trackMetadata;
+    results["____TrackURI"] = trackUri;
+    results["_____RelTime"] = relTime;
+    results["______AbsTime"] = absTime;
+    results["_______RelCount"] = relCount;
+    results["________AbsCount"] = absCount;
 
     return true;
 }
@@ -433,7 +514,7 @@ Failable<bool>
 
     results["PlayMedia"] = "NETWORK";
     results["RecMedia"] = "NOT_IMPLEMENTED";
-    results["RecQuailityModes"] = "NOT_IMPLEMENTED";
+    results["RecQualityModes"] = "NOT_IMPLEMENTED";
 
     return true;
 }
@@ -517,6 +598,7 @@ void AVTransportService::changeState(AVTransportState state)
 {
     _state = state;
     eventedValueChanged("TransportState", transportStateToString(_state));
+    sendLastChangedEvent();
 }
 
 void AVTransportService::changeStatus(AVTransportStatus status)
@@ -524,17 +606,63 @@ void AVTransportService::changeStatus(AVTransportStatus status)
     _status = status;
 }
 
-void AVTransportService::play()
+void AVTransportService::play(QMap<QString, QString> &results)
 {
     if (_playlist.isEmpty())
         return;
+    QObject::connect(&_player, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),
+                    this, SLOT(onMediaStatusChanged(QMediaPlayer::MediaStatus)));
+    sendLastChangedEvent();
 
-    _player.play();
+    QEventLoop ev;
+    QObject::connect(this, SIGNAL(playInvoked()), &ev, SLOT(quit()));
+    QMetaObject::invokeMethod(&_player, "play", Qt::QueuedConnection);
+    ev.exec();
+    if(_lastStatus == QMediaPlayer::InvalidMedia)
+    {
+        utilities::fillWithErrorMessage(results, RESOURCE_NOT_FOUND_CODE,
+                                        "The resource to be played cannot be found in the network");
+    }
+
 }
 
-void AVTransportService::pause()
+void AVTransportService::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
 {
-    _player.pause();
+    bool stopWatchPlay = (invalidMedia(status) || playedMedia(status));
+    _lastStatus = status;
+
+    if (stopWatchPlay)
+    {
+        QObject::disconnect(&_player, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),
+                            this, SLOT(onMediaStatusChanged(QMediaPlayer::MediaStatus)));
+        emit playInvoked();
+    }
+
+
+}
+
+bool AVTransportService::invalidMedia(QMediaPlayer::MediaStatus status)
+{
+    return ((status == QMediaPlayer::InvalidMedia) || (status == QMediaPlayer::NoMedia));
+}
+
+bool AVTransportService::playedMedia(QMediaPlayer::MediaStatus status)
+{
+    return (((status == QMediaPlayer::BufferingMedia) || (status == QMediaPlayer::BufferedMedia))
+            && (_state == PLAYING));
+}
+
+void AVTransportService::pause(QMap<QString, QString> &results)
+{
+    if (_player.state() == QMediaPlayer::PlayingState)
+    {
+        _player.pause();
+    }
+    else
+    {
+        utilities::fillWithErrorMessage(results, TRANSITION_NOT_AVAILABLE_CODE,
+                                        "Transition not available");
+    }
 }
 
 void AVTransportService::stop()
@@ -559,9 +687,10 @@ QMap<QString, QString>
 
 
     if (actionName == "Play") {
-        if(instanceIdCorrect){ play(); }
+        if((instanceIdCorrect) && (checkSpeed(arguments, _resultBuffer)))
+        { play(_resultBuffer); }
     } else if (actionName == "Pause") {
-        if(instanceIdCorrect){pause();}
+        if(instanceIdCorrect){pause(_resultBuffer);}
     } else if (actionName == "Stop") {
         if(instanceIdCorrect){stop();}
     } else if (actionName == "SetAVTransportURI") {
@@ -609,16 +738,34 @@ void AVTransportService::playerStateChanged(QMediaPlayer::State state){
 void AVTransportService::sendLastChangedEvent()
 {
     if (_lastChangedNotifications.isEmpty()) return;
+    if(maySendLastChangeEventSetSend())
+    {
+        sendLastChangedEventNow();
+    }
+}
 
+bool AVTransportService::maySendLastChangeEventSetSend()
+{
+    sentEventMutex.lock();
+    bool result = !sentEvent;
+    sentEvent = true;
+    sentEventMutex.unlock();
+    return result;
+}
+
+void AVTransportService::sendLastChangedEventNow()
+{
+    sentEventMutex.lock();
     QString message
         = createLastChangedEventValueAVT(_lastChangedNotifications);
-
+    _lastChangedNotifications.clear();
+    sentEventMutex.unlock();
     if (_stack != NULL) {
         qDebug() << "Sending LAST_CHANGED event!";
-        _stack->sendEvent(_id, NULL, LAST_CHANGED_VARNAME, message);
+        EventMessage eventMessage = EventMessage(_id, NULL, LAST_CHANGED_VARNAME,message, this);
+        _stack->sendEvent(eventMessage);
     }
 
-    _lastChangedNotifications.clear();
 }
 
 void AVTransportService::playerPositionChanged(qint64 position)
@@ -630,12 +777,6 @@ void AVTransportService::playerPositionChanged(qint64 position)
     eventedValueChanged("AbsoluteTimePosition", timePosition);
     eventedValueChanged("RelativeCounterPosition", counterPosition);
     eventedValueChanged("AbsoluteCounterPosition", counterPosition);
-}
-
-void AVTransportService::eventTimerTick()
-{
-    sendLastChangedEvent();
-    _eventTimer.start(5000); /* 5 s */
 }
 
 void AVTransportService::eventedValueChanged( const QString &name
@@ -656,4 +797,18 @@ void AVTransportService::currentMediaChanged(const QMediaContent &media){
     eventedValueChanged("CurrentTrackDuration", trackDuration);
     eventedValueChanged("CurrentMediaDuration", trackDuration);
     eventedValueChanged("CurrentTrack", QString::number(_playlist.currentIndex()));
+}
+
+void AVTransportService::onEventSent(EventMessage eventMessage)
+{
+    Q_UNUSED(eventMessage);
+    QTimer::singleShot(5000, this, SLOT(periodElapsedFromEventSent()));
+}
+
+void AVTransportService::periodElapsedFromEventSent()
+{
+    sentEventMutex.lock();
+    sentEvent = false;
+    sentEventMutex.unlock();
+    sendLastChangedEvent();
 }

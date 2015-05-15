@@ -30,62 +30,36 @@
  *
  **/
 
-#pragma once
+#ifndef IUPNPSERVICE_H
+#define IUPNPSERVICE_H
 
-typedef struct _action_args {
-    const char *service_id;
-    const char *action_name;
-    const char **action_arg_names;
-    const char **action_arg_values;
-    void *service_token;
-} action_args_t;
+#include <QtXml/QDomDocument>
+#include <QHash>
+#include <QStringList>
+#include <QString>
+#include <QUrl>
+#include <QMap>
 
-typedef struct _action_output {
-    unsigned int error_code;
-    const char *error_message;
-    const char **action_out_names;
-    const char **action_out_values;
-} action_output_t;
+class IUPnPService
+{
+public:
+    virtual ~IUPnPService() {}
 
-typedef struct _query_args {
-    const char *service_id;
-    const char *variable_name;
-} query_args_t;
+    virtual QMap<QString, QString> handleSOAP( const QString &actionName
+                                              , const QHash<QString, QString> &arguments
+                                              ) = 0;
 
-typedef struct _network_params {
-    const char *interface;
-    unsigned int port;
-} network_params_t;
+    virtual const QDomDocument &getServiceDescription() const = 0;
 
-typedef struct _upnp_params {
-    const char *root_description;
-    const char *description_dir;
-} upnp_params_t;
+    virtual const QString getServiceId() const = 0;
+    virtual const QString getServiceType() const = 0;
 
-typedef struct _notification_params {
-    const char *service_id;
-    const char *var_name;
-    const char *value;
-    void *service_token;
-} notification_params_t;
+    virtual const QUrl getScdpPath() const = 0;
+    virtual const QUrl getControlUrl() const = 0;
+    virtual const QUrl getEventUrl() const = 0;
 
-struct _uda_stack;
-typedef struct _uda_stack uda_stack_t;
+    virtual const QStringList getEventedVariableNames() const = 0;
 
-typedef action_output_t (*action_handler_t)(const action_args_t args);
-typedef void (*query_handler_t)(const uda_stack_t *stack, const query_args_t args);
-
-
-uda_stack_t *create_uda_stack( const network_params_t *net_params
-                             , const upnp_params_t   *upnp_params
-                             , const action_handler_t action_handler
-                             , const query_handler_t  query_handler
-                             );
-
-int start_uda_stack(uda_stack_t *stack);
-
-void stop_uda_stack(uda_stack_t* stack);
-
-void destroy_uda_stack(uda_stack_t *stack);
-
-void send_notification(uda_stack_t *stack, notification_params_t params);
+    virtual const QMap<QString,QString> getInitialEventVariables() const = 0;
+};
+#endif // IUPNPSERVICE_H

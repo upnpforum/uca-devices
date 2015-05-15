@@ -2,6 +2,7 @@ include(../qxmpp.pri)
 
 TEMPLATE = subdirs
 
+LIBS += $$QXMPP_INTERNAL_LIBS -L/usr/include/Qca-qt5/QtCrypto -lqca-qt5
 SUBDIRS = example_0_connected \
           example_1_echoClient \
           example_2_rosterHandling \

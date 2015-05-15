@@ -34,13 +34,15 @@
 
 #include <QMediaPlayer>
 
-#include <UcaStack/ucautilities.h>
+#include <Stack/ucautilities.h>
 
 #include "rcscdptemplate.h"
 #include "renderingcontrolutilities.h"
 
 static unsigned int INVALID_ARGS_CODE = 402;
 static unsigned int INVALID_ID_CODE = 718;
+static unsigned int INVALID_INSTANCEID_CODE = 702;
+static unsigned int INVALID_PRESETNAME_CODE = 701;
 
 static const char *SERVICE_ID = "urn:upnp-org:serviceId:RenderingControl";
 static const char *SERVICE_TYPE = "urn:schemas-upnp-org:service:RenderingControl:1";
@@ -75,6 +77,16 @@ void RenderingControlService::handleListPresets( const QHash<QString, QString> &
                                                ) const {
     QStringList requiredArgs;
     requiredArgs << "InstanceID";
+
+    QString instanceId = arguments["InstanceID"];
+    bool isOk;
+    instanceId.toInt(&isOk);
+    if(!isOk){
+        QString message("Invalid ListPresets invocation: invalid InstanceID");
+        utilities::fillWithErrorMessage(results, INVALID_ARGS_CODE, message);
+        return;
+    }
+
     Failable<bool> argCheck = utilities::checkRequiredArguments(requiredArgs,arguments);
     if(argCheck.hasValue() == false){
         QString message("Invalid ListPresets invocation: missing InstanceID");
@@ -82,7 +94,7 @@ void RenderingControlService::handleListPresets( const QHash<QString, QString> &
         return;
     }else if(arguments["InstanceID"]!="0"){
         QString message = QString("Invalid InstanceID: '%1', expected '0'.").arg(arguments["InstanceID"]);
-        utilities::fillWithErrorMessage(results, INVALID_ID_CODE, message);
+        utilities::fillWithErrorMessage(results, INVALID_INSTANCEID_CODE, message);
         return;
     }
 
@@ -103,7 +115,11 @@ void RenderingControlService::handleSelectPreset( const QHash<QString, QString> 
         return;
     }else if(arguments["InstanceID"]!="0"){
         QString message = QString("Invalid InstanceID: '%1', expected '0'.").arg(arguments["InstanceID"]);
-        utilities::fillWithErrorMessage(results, INVALID_ID_CODE, message);
+        utilities::fillWithErrorMessage(results, INVALID_INSTANCEID_CODE, message);
+        return;
+    }else if (arguments["PresetName"]!="FactoryDefaults" && arguments["PresetName"]!="InstallationDefaults"){
+        QString message = QString("Invalid PresetName: '%1'.").arg(arguments["PresetName"]);
+        utilities::fillWithErrorMessage(results, INVALID_PRESETNAME_CODE, message);
         return;
     }
 }
@@ -119,9 +135,11 @@ void RenderingControlService::handleGetVolume(const QHash<QString, QString> &arg
         return;
     }else if(arguments["InstanceID"]!="0"){
         QString message = QString("Invalid InstanceID: '%1', expected '0'.").arg(arguments["InstanceID"]);
+        utilities::fillWithErrorMessage(result, INVALID_INSTANCEID_CODE, message);
+    }else if(arguments["Channel"]!="Master"){
+        QString message = QString("Invalid Channel: '%1', expected 'Master'.").arg(arguments["Channel"]);
         utilities::fillWithErrorMessage(result, INVALID_ID_CODE, message);
     }
-
     QString volume("0");
     if (_player != NULL) {
         volume = QString::number(_player->volume());
@@ -144,6 +162,9 @@ void RenderingControlService::handleSetVolume( const QHash<QString, QString> &ar
         //return Failable<bool>::Propagate("Invalid SetVolume invocation", argCheck);
     }else if(arguments["InstanceID"]!="0"){
         QString message = QString("Invalid InstanceID: '%1', expected '0'.").arg(arguments["InstanceID"]);
+        utilities::fillWithErrorMessage(result, INVALID_INSTANCEID_CODE, message);
+    }else if(arguments["Channel"]!="Master"){
+        QString message = QString("Invalid Channel: '%1', expected 'Master'.").arg(arguments["Channel"]);
         utilities::fillWithErrorMessage(result, INVALID_ID_CODE, message);
     }
 
@@ -155,6 +176,10 @@ void RenderingControlService::handleSetVolume( const QHash<QString, QString> &ar
         utilities::fillWithErrorMessage(result, INVALID_ARGS_CODE, message);
         return;
         //return Failable<bool>::Failure("Invalid SetVolume DesiredVolume");
+    }
+    if (desiredVolumeInt > 9000 || desiredVolumeInt < 0){
+        QString message = QString("Invalid DesiredVolume: '%1'.").arg(arguments["DesiredVolume"]);
+        utilities::fillWithErrorMessage(result, INVALID_ID_CODE, message);
     }
     if (_player != NULL) {
 	QHash<QString, QString> volumeChange;
@@ -221,6 +246,12 @@ const QUrl RenderingControlService::getEventUrl() const
 const QStringList RenderingControlService::getEventedVariableNames() const
 {
     QStringList variables;
-    variables << "LastChange";
+    variables << LAST_CHANGED_VARNAME;
+    return variables;
+}
+
+const QMap<QString,QString> RenderingControlService::getInitialEventVariables() const
+{
+    QMap<QString,QString> variables;
     return variables;
 }

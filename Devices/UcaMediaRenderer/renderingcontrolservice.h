@@ -33,8 +33,8 @@
 #ifndef RENDERINGCONTROLSERVICE_H
 #define RENDERINGCONTROLSERVICE_H
 
-#include <UcaStack/iupnpservice.h>
-#include <UcaStack/ucastack.h>
+#include <Stack/iupnpservice.h>
+#include <Stack/ucastack.h>
 
 class QMediaPlayer;
 
@@ -83,6 +83,7 @@ public:
     virtual const QUrl getEventUrl() const;
 
     virtual const QStringList getEventedVariableNames() const;
+    virtual const QMap<QString,QString> getInitialEventVariables() const;
 };
 
 #endif // RENDERINGCONTROLSERVICE_H

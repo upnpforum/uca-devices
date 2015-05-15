@@ -38,8 +38,8 @@
 
 #include <QtMultimedia/QMediaPlaylist>
 
-#include <UcaStack/ucastack.h>
-#include <UcaStack/ucautilities.h>
+#include <Stack/ucastack.h>
+#include <Stack/ucautilities.h>
 
 #include "mediarendererdevice.h"
 

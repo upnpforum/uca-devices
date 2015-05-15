@@ -35,7 +35,7 @@
 
 #include "QXmppSasl_p.h"
 #include "QXmppUtils.h"
-
+#include "QXmppSaslClientScram.h"
 const char *ns_xmpp_sasl = "urn:ietf:params:xml:ns:xmpp-sasl";
 
 static QByteArray forcedNonce;
@@ -234,7 +234,7 @@ QXmppSaslClient::~QXmppSaslClient()
 
 QStringList QXmppSaslClient::availableMechanisms()
 {
-    return QStringList() << "PLAIN" << "DIGEST-MD5" << "ANONYMOUS" << "X-FACEBOOK-PLATFORM" << "X-MESSENGER-OAUTH2" << "X-OAUTH2";
+    return QStringList() << "PLAIN" << "DIGEST-MD5" << "ANONYMOUS" << "X-FACEBOOK-PLATFORM" << "X-MESSENGER-OAUTH2" << "X-OAUTH2" << "SCRAM-SHA-1";
 }
 
 /// Creates an SASL client for the given mechanism.
@@ -253,6 +253,8 @@ QXmppSaslClient* QXmppSaslClient::create(const QString &mechanism, QObject *pare
         return new QXmppSaslClientWindowsLive(parent);
     } else if (mechanism == "X-OAUTH2") {
         return new QXmppSaslClientGoogle(parent);
+    } else if (mechanism == "SCRAM-SHA-1") {
+        return new QXmppSaslClientScram(parent);
     } else {
         return 0;
     }

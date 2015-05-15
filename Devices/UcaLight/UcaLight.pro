@@ -22,7 +22,7 @@ SOURCES += main.cpp \
     lightservices.cpp
 
 ! win32 {
-    SOURCES += cmodules/uda.c udastack.cpp
+    SOURCES +=
 }
 
 ! win32 {
@@ -36,15 +36,15 @@ SOURCES += main.cpp \
                     -I/usr/include/gssdp-1.0 \
 
     LIBS += -lgupnp-1.0 -lgssdp-1.0 -lxml2 -lsoup-2.4 -lgio-2.0 -lgobject-2.0 -lglib-2.0
-    LIBS += -L../UcaStack -lUcaStack
+    LIBS += -L../Stack -lStack
 }
 
 win32 {
     debug {
-        LIBS += -L../UcaStack/debug -lUcaStack
+        LIBS += -L../Stack/debug -lStack
     }
     release {
-        LIBS += -L../UcaStack/release -lUcaStack
+        LIBS += -L../Stack/release -lStack
     }
 }
 
@@ -52,8 +52,6 @@ QT += xml testlib quick
 
 HEADERS += \
     dimmablelight.h \
-    cmodules/uda.h \
-    udastack.h \
     devicesettings.h \
     lightservices.h
 

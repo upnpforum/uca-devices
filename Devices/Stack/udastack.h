@@ -30,34 +30,44 @@
  *
  **/
 
-#ifndef IUPNPSERVICE_H
-#define IUPNPSERVICE_H
+#ifndef UDASTACK_H
+#define UDASTACK_H
 
-#include <QtXml/QDomDocument>
-#include <QHash>
-#include <QStringList>
-#include <QString>
-#include <QUrl>
-#include <QMap>
+extern "C" {
+    #include "cmodules/uda.h"
+}
 
-class IUPnPService
+#include <Stack/failable.h>
+#include <Stack/iupnpstack.h>
+
+class UdaStack : public IUPnPStack
 {
+private:
+    uda_stack_t *_stack;
+    IUPnPDevice *_device;
+
+    bool _isInitialized;
+    bool _isRunning;
+
+    UdaStack();
+    UdaStack(UdaStack const&);
+    void operator=(UdaStack const&);
+
 public:
-    virtual ~IUPnPService() {}
+    static UdaStack *getInstance();
+    Failable<bool> initialize(IUPnPDevice *device);
 
-    virtual QMap<QString, QString> handleSOAP( const QString &actionName
-                                              , const QHash<QString, QString> &arguments
-                                              ) = 0;
+    void sendEvent(EventMessage eventMessage);
+    void registerDevice(IUPnPDevice *observer);
 
-    virtual const QDomDocument &getServiceDescription() const = 0;
+    void start();
+    void stop();
 
-    virtual const QString getServiceId() const = 0;
-    virtual const QString getServiceType() const = 0;
+    inline bool isInitialized() const { return _isInitialized; }
+    inline bool isRunning() const { return _isRunning; }
+    inline IUPnPDevice *getDevice() const { return _device; }
 
-    virtual const QUrl getScdpPath() const = 0;
-    virtual const QUrl getControlUrl() const = 0;
-    virtual const QUrl getEventUrl() const = 0;
-
-    virtual const QStringList getEventedVariableNames() const = 0;
+    ~UdaStack();
 };
-#endif // IUPNPSERVICE_H
+
+#endif // UDASTACK_H

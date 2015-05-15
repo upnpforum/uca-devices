@@ -66,7 +66,7 @@ Rectangle {
             id: version
             y: 20
             color: uiConstants.textAccent
-            text: "v2.0"
+            text: "v2.1"
             anchors.left: title.right
             anchors.leftMargin: 8
             font.family: captionFontRegular.name

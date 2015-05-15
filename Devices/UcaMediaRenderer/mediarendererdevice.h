@@ -33,7 +33,7 @@
 #ifndef MEDIARENDERERDEVICE_H
 #define MEDIARENDERERDEVICE_H
 
-#include <UcaStack/iupnpdevice.h>
+#include <Stack/iupnpdevice.h>
 
 #include "avtransportservice.h"
 #include "renderingcontrolservice.h"

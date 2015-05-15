@@ -38,7 +38,8 @@ INSTALL_HEADERS += \
 HEADERS += \
     base/QXmppCodec_p.h \
     base/QXmppSasl_p.h \
-    base/QXmppStreamInitiationIq_p.h
+    base/QXmppStreamInitiationIq_p.h \
+    base/QXmppSaslClientScram.h
 
 # Source files
 SOURCES += \
@@ -78,7 +79,8 @@ SOURCES += \
     base/QXmppStun.cpp \
     base/QXmppUtils.cpp \
     base/QXmppVCardIq.cpp \
-    base/QXmppVersionIq.cpp
+    base/QXmppVersionIq.cpp \
+    base/QXmppSaslClientScram.cpp
 
 # DNS
 qt_version = $$QT_MAJOR_VERSION

@@ -39,7 +39,7 @@
 #include <QDomDocument>
 #include <QTextStream>
 
-#include <UcaStack/iupnpservice.h>
+#include <Stack/iupnpservice.h>
 
 const char *DEVICE_XML = "device.xml";
 
@@ -263,17 +263,17 @@ void UdaStack::stop()
     }
 }
 
-void UdaStack::sendEvent(QString serviceId, void *serviceToken, QString variableName, QString value)
+void UdaStack::sendEvent(EventMessage eventMessage)
 {
-    const char *service_id = copy_qstring(serviceId);
-    const char *var_name   = copy_qstring(variableName);
-    const char *var_value  = copy_qstring(value);
+    const char *service_id = copy_qstring(eventMessage.serviceId);
+    const char *var_name   = copy_qstring(eventMessage.variableName);
+    const char *var_value  = copy_qstring(eventMessage.value);
 
     notification_params_t params;
     params.service_id = service_id;
     params.var_name   = var_name;
     params.value      = var_value;
-    params.service_token = serviceToken;
+    params.service_token = eventMessage.serviceToken;
 
     send_notification(_stack, params);
 }

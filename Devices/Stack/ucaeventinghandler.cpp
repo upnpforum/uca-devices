@@ -587,7 +587,7 @@ Failable<bool> UcaEventingHandler::createNodes()
            continue;
        }
 
-       QString serviceNode = QString("%1/%2").arg(base).arg(id);
+       QString serviceNode = QString("%1/%2").arg(base).arg(service->getServiceType());
 
        creationResult = createPubSubNode(_stack, serviceNode, "collection", base);
        if (creationResult.hasValue() == false) {
@@ -605,6 +605,12 @@ Failable<bool> UcaEventingHandler::createNodes()
            } else if (creationResult.value() == false) {
                qDebug() << "Already created:" << varNode;
            }
+       }
+       QMap<QString,QString> values = service->getInitialEventVariables();
+       foreach (QString name, values.keys()) {
+           QMap<QString,QString> tmp;
+           tmp.insert(name,values[name]);
+           this->sendEvent(service->getServiceType(),tmp, 0);
        }
     }
     this->updateConfigIdCloud();
@@ -683,8 +689,7 @@ Failable<bool> UcaEventingHandler::updateConfigIdCloud(){
 static Failable<QString> createPubSubEventStanza( const QString &jid
                                                 , const QString &pubsubNode
                                                 , const QString &nodeName
-                                                , const QString &varName
-                                                , const QString &value
+                                                , const QMap <QString,QString> &variables
                                                 , QXmppIq &output
                                                 )
 {
@@ -716,50 +721,75 @@ static Failable<QString> createPubSubEventStanza( const QString &jid
     propertyset.setAttribute("xmlns:e", "urn:schemas-upnp-org:event-1-0");
     item.appendChild(propertyset);
 
-    QXmppElement property;
-    property.setTagName("e:property");
-    propertyset.appendChild(property);
+    foreach (QString s, variables.keys()){
+        QXmppElement property;
+        property.setTagName("e:property");
+        propertyset.appendChild(property);
+        QXmppElement variable;
+        variable.setTagName(s);
+        variable.setValue(variables[s]);
+        property.appendChild(variable);
+    }
 
-    QXmppElement variable;
-    variable.setTagName(varName);
-    variable.setValue(value);
-    property.appendChild(variable);
+
+
 
     output.setExtensions(elements);
 
     return id;
 }
 
-Failable<bool> UcaEventingHandler::sendEventAsync( const QString serviceId
-                                                 , const QString varName
-                                                 , const QString value
-                                                 )
+Failable<bool> UcaEventingHandler::sendEventAsync(EventMessage eventMessage)
 {
-    if (isSendingEvent()) {
-        return Failable<bool>::Failure("Already sending an event.");
+    uppnEventsQueue.enqueue(eventMessage);
+    mutex.lock();
+    bool startSender = !eventSendingRunning;
+    if (startSender) {
+        _futureEventSent = QtConcurrent::run(this, &UcaEventingHandler::sendEventAsyncWrapper);
     }
-
-    _currentEventServiceId = serviceId;
-    _currentEventVariableName = varName;
-    _currentEventValue = value;
-
-    _futureEventSent = QtConcurrent::run(this, &UcaEventingHandler::sendEventAsyncWrapper);
-
+    mutex.unlock();
     return true;
 }
 
+#include "UcaMediaRenderer/avtransportservice.h"
+
 void UcaEventingHandler::sendEventAsyncWrapper()
 {
-    Failable<bool> result =
-        sendEvent(_currentEventServiceId, _currentEventVariableName, _currentEventValue);
-    if (result.hasValue() == false) {
-        qDebug() << "Failed to send event:" << result.message();
+    mutex.lock();
+    eventSendingRunning = true;
+    mutex.unlock();
+    while(nextEventInQueue())
+    {
+        EventMessage args = uppnEventsQueue.dequeue();
+        QString eventServiceId = args.serviceId;
+        QMap<QString,QString> variables;
+        variables.insert(args.variableName, args.value);
+        Failable<bool> result =
+            sendEvent(eventServiceId, variables, &args);
+        if (result.hasValue() == false) {
+            qDebug() << "Failed to send event:" << result.message();
+        }
     }
 }
 
+bool UcaEventingHandler::nextEventInQueue()
+{
+    bool result;
+    mutex.lock();
+    if(!uppnEventsQueue.isEmpty())
+        result = true;
+    else
+    {
+        result = false;
+        eventSendingRunning = false;
+    }
+    mutex.unlock();
+    return result;
+}
+
 Failable<bool> UcaEventingHandler::sendEvent( const QString &serviceId
-                                            , const QString &varName
-                                            , const QString &value
+                                            , const QMap <QString,QString> &variables,
+                                              EventMessage* args
                                             )
 {
     if (_stack == NULL) {
@@ -772,16 +802,23 @@ Failable<bool> UcaEventingHandler::sendEvent( const QString &serviceId
         return Failable<bool>::Failure("Cannot check isPubSubSupported awaiting response of other request.");
     }
 
-    QString nodeName
-        = QString("%1/%2/%3").arg(_stack->resourceName(), serviceId, varName);
+    QString nodeName = "";
 
+    if (variables.count()>1)
+    {
+    nodeName = QString("%1/%2").arg(_stack->resourceName(), serviceId);
+    }
+    else
+    {
+    QString varName = variables.keys().first();
+    nodeName = QString("%1/%2/%3").arg(_stack->resourceName(), serviceId, varName);
+}
     QXmppIq stanza;
     Failable<QString> maybeId
         = createPubSubEventStanza( _stack->fullJid()
                                  , _stack->pubSubService()
                                  , nodeName
-                                 , varName
-                                 , value
+                                 , variables
                                  , stanza
                                  );
 
@@ -798,6 +835,11 @@ Failable<bool> UcaEventingHandler::sendEvent( const QString &serviceId
     }
     if (maybeSent.value() == false) {
         return Failable<bool>::Failure("Failed to sent iq.");
+    }
+
+    if (args != 0)
+    {
+        emit args->serviceToNotify->eventSent(*args);
     }
 
     Failable<QXmppIq> maybeResponse = waitForResponse(maybeId.value());

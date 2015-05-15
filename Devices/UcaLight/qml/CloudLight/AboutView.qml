@@ -72,7 +72,7 @@ Item{
                 id: text1
                 x: 17
                 y: 15
-                text: qsTr("UPnP Cloud Architecture Proof of Concept Device aplication, v2.0")
+                text: qsTr("UPnP Cloud Architecture Proof of Concept Device aplication, v2.1")
                 font.pixelSize: 12
             }
 

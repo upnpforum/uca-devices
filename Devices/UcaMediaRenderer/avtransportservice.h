@@ -33,13 +33,13 @@
 #ifndef AVTRANSPORTSERVICE_H
 #define AVTRANSPORTSERVICE_H
 
-#include <UcaStack/iupnpservice.h>
-#include <UcaStack/failable.h>
+#include <Stack/iupnpservice.h>
+#include <Stack/failable.h>
 
-#include <QTimer>
 #include <QtMultimedia/QMediaPlaylist>
-
+#include <QMutex>
 #include "extendedmediaplayer.h"
+#include <Stack/iupnpstack.h>
 
 class IUPnPStack;
 
@@ -53,9 +53,10 @@ enum AVTransportStatus
     OK = 0, ERROR_OCCURRED = 1
 };
 
-class AVTransportService : public QObject,public IUPnPService
+class AVTransportService : public QObject,public IUPnPService, public INotifiableService
 {
     Q_OBJECT
+    Q_INTERFACES(INotifiableService)
 
 private:
     IUPnPStack *_stack;
@@ -65,6 +66,7 @@ private:
 
     AVTransportState _state;
     AVTransportStatus _status;
+    QMediaPlayer::MediaStatus _lastStatus;
 
     ExtendedMediaPlayer _player;
     QMediaPlaylist _playlist;
@@ -76,10 +78,10 @@ private:
     QHash<QString, QString> _metadataForPlayer;
 
     QHash<QString, QString> _lastChangedNotifications;
-    QTimer _eventTimer;
 
     void eventedValueChanged(const QString &name, const QString &value);
     void sendLastChangedEvent();
+    void sendLastChangedEventNow();
 
     Failable<bool>
         handleSetAVTransportUri(const QHash<QString, QString> &arguments, QMap<QString, QString> &results);
@@ -120,12 +122,17 @@ private:
     void changeStatus(AVTransportStatus status);
 
     void stop();
-    void play();
-    void pause();
+    void play(QMap<QString, QString> &results);
+    void pause(QMap<QString, QString> &results);
 
     void printDebugState();
 
     void notifyChatListeners(const QString &message);
+    bool invalidMedia(QMediaPlayer::MediaStatus status);
+    bool playedMedia(QMediaPlayer::MediaStatus status);
+    bool maySendLastChangeEventSetSend();
+    bool sentEvent;
+    QMutex sentEventMutex;
 
 public:
     AVTransportService(IUPnPStack * const stack);
@@ -142,15 +149,21 @@ public:
     virtual const QUrl getEventUrl() const;
 
     virtual const QStringList getEventedVariableNames() const;
-
+    virtual const QMap<QString,QString> getInitialEventVariables() const;
 
     inline ExtendedMediaPlayer &getMediaPlayer() { return _player; }
+
+ signals:
+    void playInvoked();
+    void eventSent(EventMessage eventMessage);
 
  private slots:
     void playerStateChanged(QMediaPlayer::State state);
     void currentMediaChanged(const QMediaContent& media);
     void playerPositionChanged(qint64 position);
-    void eventTimerTick();
+    void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
+    void onEventSent(EventMessage eventMessage);
+    void periodElapsedFromEventSent();
 };
 
 #endif // AVTRANSPORTSERVICE_H

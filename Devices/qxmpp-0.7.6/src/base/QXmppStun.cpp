@@ -31,7 +31,7 @@
 
 #include "QXmppStun.h"
 #include "QXmppUtils.h"
-
+#include <QDataStream>
 #define ID_SIZE 12
 #define STUN_RTO_INTERVAL 500
 #define STUN_RTO_MAX      7

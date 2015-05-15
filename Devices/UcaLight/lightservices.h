@@ -33,8 +33,8 @@
 #ifndef LIGHTSERVICES_H
 #define LIGHTSERVICES_H
 
-#include <UcaStack/iupnpservice.h>
-#include <UcaStack/failable.h>
+#include <Stack/iupnpservice.h>
+#include <Stack/failable.h>
 
 class QDir;
 
@@ -78,7 +78,8 @@ public:
     const QUrl getControlUrl() const { return _controlUrl; }
     const QUrl getEventUrl() const { return _eventUrl; }
 
-    const QStringList getEventedVariableNames() const { return _variables; }
+    const QStringList getEventedVariableNames() const;
+    const QMap<QString,QString> getInitialEventVariables() const;
 };
 
 class SwitchPowerService : public IUPnPService
@@ -114,7 +115,8 @@ public:
     const QUrl getControlUrl() const { return _controlUrl; }
     const QUrl getEventUrl() const { return _eventUrl; }
 
-    const QStringList getEventedVariableNames() const { return _variables; }
+    const QStringList getEventedVariableNames() const;
+    const QMap<QString,QString> getInitialEventVariables() const;
 };
 
 #endif // LIGHTSERVICES_H

@@ -36,7 +36,7 @@
 #include <QtXml/QDomElement>
 #include <QtXml/QDomText>
 
-#include <UcaStack/ucautilities.h>
+#include <Stack/ucautilities.h>
 
 const char *DEVICE_TYPE = "urn:schemas-upnp-org:device:MediaRenderer:1";
 

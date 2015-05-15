@@ -9,3 +9,9 @@ Building new package:
 
 3. if the build was succesful a .deb package will be created in the directory
    above this one
+
+QCA dependency:
+=====================
+0. Install libqca-qt5-2 from your distro repository if available
+1. You can build libqca-qt5-2 from sources. Easy way: download source from http://packages.ubuntu.com/vivid/libqca-qt5-2. After building and installlig core libqca-qt5, you have to build and install plugin qca-ossl from plugins directory.
+

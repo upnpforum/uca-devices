@@ -51,7 +51,7 @@ static const char *DEVICE_PATH_SUFFIX = "description-xmls/device.xml";
 static const char *DATA_MODEL_PATH_SUFFIX = "description-xmls/datamodel.xml";
 
 static const char *CFGMGMT_SERV_TYPE
-    = "urn:schemas-upnp-org:service:ConfigurationManagement:1";
+    = "urn:schemas-upnp-org:service:ConfigurationManagement:2";
 static const char *SENSORTRANS_SERV_TYPE
     = "urn:schemas-upnp-org:service:SensorTransportGeneric:2";
 
@@ -63,8 +63,8 @@ static const char *SENSORTRANS_SERV_ID
 static const char *GET_VALUES_RESPONSE_TEMPLATE
     = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
       "<cms:ParameterValueList xmlns:cms=\"urn:schemas-upnp-org:dm:cms\""
-          "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
-          "xsi:schemaLocation=\"urn:schemas-upnp-org:dm:cms http://www.upnp.org/schemas/dm/cms.xsd\">"
+          " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
+          " xsi:schemaLocation=\"urn:schemas-upnp-org:dm:cms http://www.upnp.org/schemas/dm/cms.xsd\">"
                "%1"
       "</cms:ParameterValueList>";
 
@@ -169,7 +169,7 @@ static QString pathToXPath(const QString &path)
     return copy;
 }
 
-static void getValueFromDataModel
+static bool getValueFromDataModel
     ( const QString &path
     , const QDomDocument &model
     , QHash<QString, QString> &values
@@ -182,29 +182,44 @@ static void getValueFromDataModel
     query.setQuery(xPath);
 
     if (query.isValid() == false) {
-        QString result = QString("Invalid path: '%1'.").arg(path);
-        values.insert(path, result);
+        QString resul = QString("Invalid path: '%1'.").arg(path);
+        //values.insert(path, resul);
     } else {
         QString result;
+
         query.evaluateTo(&result);
         if (result.isEmpty() == false) {
             QDomDocument subTree;
             subTree.setContent(result);
 
+            if (result.compare("")){
+                return false;
+            }
+
             QDomNodeList children = subTree.firstChild().childNodes();
             flattenValuesTree(children, path, values);
         }
+        else{
+            return false;
+        }
     }
+    return true;
 }
 
-static QStringList parseGetValuesInput(const QString &parameters)
+static QStringList parseGetValuesInput(const QString &parameters, bool &error)
 {
     QString errorMessage; int col, line;
     QDomDocument document;
-    document.setContent(parameters, &errorMessage, &line, &col);
+    errorMessage= "";
+    bool res = document.setContent(parameters, &errorMessage, &line, &col);
     qDebug() << errorMessage << line << col;
 
     QDomNodeList paths = document.elementsByTagName("ContentPath");
+
+    if (!res)
+    {
+        error = true;
+    }
 
     QStringList result;
     for (int i = 0; i < paths.count(); i++) {
@@ -353,28 +368,65 @@ void LightSensor::handleConfigManagement
     if (actionName == "GetValues") {
         if (arguments.contains("Parameters")) {
             QString parameters = arguments["Parameters"];
-            QStringList paths = parseGetValuesInput(parameters);
+            bool error = false;
+            QStringList paths = parseGetValuesInput(parameters,error);
             QHash<QString, QString> values;
             foreach (QString path, paths) {
-                getValueFromDataModel(path, *_dataModel, values);
+                if (!getValueFromDataModel(path, *_dataModel, values)){
+                    _outArgs["__errorCode"]    = QString::number(703);
+                    _outArgs["__errorMessage"] = "No Such Name";
+                    return;
+                }
             }
             QString result = packGetValuesResult(values);
+
+            if (error){
+            _outArgs["__errorCode"]    = QString::number(702);
+            _outArgs["__errorMessage"] = "Invalid XML Argument";
+            }
+            else{
             _outArgs["ParameterValueList"] = result;
+            }
         } else {
             _outArgs["__errorCode"]    = QString::number(402);
             _outArgs["__errorMessage"] = "Missing argument 'Parameters'";
         }
-    } else {
+    } else if (actionName == "GetSupportedDataModels"){
+        _outArgs["SupportedDataModels"] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><cms:SupportedDataModels xmlns:cms=\"urn:schemas-upnp-org:dm:cms\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:schemas-upnp-org:dm:cms http://www.upnp.org/schemas/dm/cms.xsd\"><SubTree><URI>urn:upnp-org:smgt:1</URI><Location>/UPnP/SensorMgt/</Location><Description>UCTT Manageable Device common objects</Description></SubTree></cms:SupportedDataModels>";
+    } else if (actionName == "GetConfigurationUpdate"){
+        _outArgs["StateVariableValue"] = "356,2007-10-24T05:41:00,&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;cms:ParameterValueList xmlns:cms=&quot;urn:schemas-upnp-org:dm:cms&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:schemaLocation=&quot;urn:schemas-upnp-org:dm:cms http://www.upnp.org/schemas/dm/cms.xsd&quot;&gt;&lt;Parameter&gt;&lt;ParameterPath&gt;UPnP/PHONE/Settings/Power/Battery/LowBatteryAlarm&lt;/ParameterPath&gt;&lt;Value&gt;1&lt;/Value&gt;&lt;/Parameter&gt;&lt;/cms:ParameterValueList&gt;";
+    } else if (actionName == "GetCurrentConfigurationVersion"){
+        _outArgs["StateVariableValue"] = "0";
+    } else if (actionName == "GetSupportedDataModelsUpdate"){
+        _outArgs["StateVariableValue"] = "35,2008-10-24T05:45:30";
+    } else if (actionName == "GetSupportedParametersUpdate"){
+        _outArgs["StateVariableValue"] = "59,2008-10-24T05:45:30";
+    } else if (actionName == "GetSupportedParameters"){
+        QString node = arguments["StartingNode"];
+        if (node != "/UPnP/SensorMgt/" && node != "/"){
+            _outArgs["__errorCode"]    = QString::number(703);
+            _outArgs["__errorMessage"] = "No Such Name";
+            return;
+        }
+
+        _outArgs["Result"] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><cms:StructurePathList xmlns:cms=\"urn:schemas-upnp-org:dm:cms\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:shcemas-upnp-org:dm:cms http://www.upnp.org/schemas/dm/cm.xsd\"></cms:StructurePathList>";
+    } else if (actionName == "GetInstances"){
+        QString node = arguments["StartingNode"];
+        if (node != "/UPnP/SensorMgt/" && node != "/"){
+            _outArgs["__errorCode"]    = QString::number(703);
+            _outArgs["__errorMessage"] = "No Such Name";
+            return;
+        }
+        _outArgs["Result"] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><cms:InstancePathList xmlns:cms=\"urn:schemas-upnp-org:dm:cms\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:schemas-upnp-org:dm:cms http://www.upnp.org/schemas/dm/cms.xsd\"></cms:InstancePathList>";
+    } else if (actionName == "SetValues"){
+        _outArgs["Status"] = "ChangesCommitted";
+    }
+
+
+    else {
         QStringList actionNames;
-        actionNames << "GetSupportedDataModels"
-                    << "GetSupportedParameters"
-                    << "GetInstances"
-                    << "GetValues"
+        actionNames << "GetValues"
                     << "GetAttributes"
-                    << "GetConfigurationUpdate"
-                    << "GetCurrentConfigurationVersion"
-                    << "GetSupportedDataModelsUpdate"
-                    << "GetSupportedParametersUpdate"
                     ;
 
         if (actionNames.contains(actionName)) {

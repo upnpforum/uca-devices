@@ -37,8 +37,8 @@
 #include <QSettings>
 #include <QDir>
 
-#include <UcaStack/ucastack.h>
-#include <UcaStack/ucautilities.h>
+#include <Stack/ucastack.h>
+#include <Stack/ucautilities.h>
 
 #include "mediaserverdevice.h"
 

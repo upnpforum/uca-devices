@@ -8,7 +8,7 @@ OBJECTS_DIR = objs
 # Define how to create version.h
 qxmppheaders.target = ../qxmpp-0.7.6/include
 ! win32 {
-    qxmppheaders.commands = $$PWD/extract-headers.sh $$PWD
+    qxmppheaders.commands = $$PWD/extract-headers.sh $$PWD $$OUT_PWD
 }
 
 QMAKE_EXTRA_TARGETS += qxmppheaders

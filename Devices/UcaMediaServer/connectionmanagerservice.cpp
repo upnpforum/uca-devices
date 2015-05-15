@@ -37,6 +37,10 @@
 static const char *SERVICE_ID = "urn:upnp-org:serviceId:ConnectionManager";
 static const char *SERVICE_TYPE = "urn:schemas-upnp-org:service:ConnectionManager:1";
 
+static const char *SOURCEPROTOCOLINFO_VARNAME = "SourceProtocolInfo";
+static const char *SINKPROTOCOLINFO_VARNAME = "SinkProtocolInfo";
+static const char *CURRENTCONNECTIONIDS_VARNAME = "CurrentConnectionIDs";
+
 static QDomDocument *buildDescription()
 {
     QString scdpTempalte(CM_SCDP_TEMPLATE);
@@ -79,8 +83,8 @@ void ConnectionManagerService::
         results["__errorMessage"] = "Wrong ConnectionId";
 
     }else{
-        results["RcsID"] = "0";
-        results["AVTransportID"] = "0";
+        results["RcsID"] = "-1";
+        results["AVTransportID"] = "-1";
         results["ProtocolInfo"] = "";
         results["PeerConnectionManager"] = "";
         results["PeerConnectionID"] = "-1";
@@ -145,5 +149,17 @@ const QUrl ConnectionManagerService::getEventUrl() const
 const QStringList ConnectionManagerService::getEventedVariableNames() const
 {
     QStringList variables;
+    variables << SOURCEPROTOCOLINFO_VARNAME;
+    variables << SINKPROTOCOLINFO_VARNAME;
+    variables << CURRENTCONNECTIONIDS_VARNAME;
+    return variables;
+}
+
+const QMap<QString,QString>  ConnectionManagerService::getInitialEventVariables() const
+{
+    QMap<QString,QString> variables;
+    variables.insert(CURRENTCONNECTIONIDS_VARNAME,"0");
+    variables.insert(SINKPROTOCOLINFO_VARNAME,"");
+    variables.insert(SOURCEPROTOCOLINFO_VARNAME,"http-get:*:video/webm:*");
     return variables;
 }

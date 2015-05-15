@@ -37,9 +37,9 @@
 #include <QProcess>
 #include <QCoreApplication>
 
-#include <UcaStack/failable.h>
-#include <UcaStack/iupnpstack.h>
-#include <UcaStack/iupnpdevice.h>
+#include <Stack/failable.h>
+#include <Stack/iupnpstack.h>
+#include <Stack/iupnpdevice.h>
 
 #include "lightservices.h"
 

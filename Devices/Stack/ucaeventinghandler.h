@@ -41,7 +41,9 @@
 #include <qxmpp/QXmppIq.h>
 
 #include "failable.h"
-
+#include <QPair>
+#include <QQueue>
+#include <Stack/iupnpstack.h>
 struct UcaStack;
 
 class UcaEventingHandler : QObject
@@ -55,10 +57,6 @@ private:
 
     QString _currentlyAwaitedIqId;
     QXmppIq _lastIqReceived;
-
-    QString _currentEventServiceId;
-    QString _currentEventVariableName;
-    QString _currentEventValue;
 
     QFuture<void> _futureCheck;
     QFuture<void> _futureEventSent;
@@ -74,18 +72,21 @@ private:
     Failable<bool> updateConfigIdCloud();
     Failable<bool> checkNodeExists(const QString &nodeSuffix);
     Failable<bool> checkConfigIdCloudValue();
-
+    bool nextEventInQueue();
+    bool eventSendingRunning;
     void check();
     void sendEventAsyncWrapper();
 
-    Failable<bool> sendEvent(const QString &serviceId, const QString &varName, const QString &value);
+    Failable<bool> sendEvent(const QString &serviceId, const QMap <QString,QString> &variables, EventMessage* args);
+    QQueue<EventMessage> uppnEventsQueue;
+    QMutex mutex;
 
 public:
     UcaEventingHandler(UcaStack *stack);
 
     Failable<bool> startEventingCheck();
 
-    Failable<bool> sendEventAsync(const QString serviceId, const QString varName, const QString value);
+    Failable<bool> sendEventAsync(EventMessage eventMessage);
 
     inline bool isAwaitingResponse() { return _currentlyAwaitedIqId.isEmpty() == false; }
     inline bool isSendingEvent() { return _futureEventSent.isRunning(); }

@@ -83,6 +83,7 @@ UcaStack::UcaStack(QSettings *settings)
     const int prefixLength = 4;
     idPrefix = generateIdPrefix(prefixLength);
     qDebug() << "IQ id prefix: " << idPrefix;
+
 }
 
 UcaStack::~UcaStack()
@@ -155,7 +156,8 @@ Failable<bool> UcaStack::setupConfig(QXmppConfiguration &config)
 
     config.setJid(userName + "/" + _resourceName);
     config.setPassword(password);
-
+    config.setSaslAuthMechanism("SCRAM-SHA-1");
+    config.setUseNonSASLAuthentication(false);
     return true;
 }
 
@@ -353,7 +355,12 @@ static void buildResponse(const QMap<QString, QString> &results, QXmppElement &b
     QMap<QString, QString>::const_iterator it = results.constBegin();
     for (; it != results.constEnd(); it++) {
         QXmppElement argument;
-        argument.setTagName(it.key());
+
+        QString key = it.key();
+        key = key.replace(QString("_"),QString(""));
+
+
+        argument.setTagName(key);
         argument.setValue(it.value());
         action.appendChild(argument);
     }
@@ -503,11 +510,9 @@ void UcaStack::handleIq(const QXmppIq &incoming)
     _clientMutex.unlock();
 }
 
-void UcaStack::sendEvent(QString serviceId, void *serviceToken, QString variableName, QString value)
+void UcaStack::sendEvent(EventMessage eventMessage)
 {
-    Q_UNUSED(serviceToken)
-    //_eventing.sendEvent(serviceId, variableName, value);
-    Failable<bool> result = _eventing.sendEventAsync(serviceId, variableName, value);
+    Failable<bool> result = _eventing.sendEventAsync(eventMessage);
     if (result.hasValue() == false) {
         qDebug() << result.message();
     }

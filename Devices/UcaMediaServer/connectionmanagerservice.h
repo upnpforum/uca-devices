@@ -33,7 +33,7 @@
 #ifndef CONNECTIONMANAGERSERVICE_H
 #define CONNECTIONMANAGERSERVICE_H
 
-#include <UcaStack/iupnpservice.h>
+#include <Stack/iupnpservice.h>
 
 class ConnectionManagerService : public IUPnPService
 {
@@ -67,6 +67,7 @@ public:
     virtual const QUrl getEventUrl() const;
 
     virtual const QStringList getEventedVariableNames() const;
+    virtual const QMap<QString,QString> getInitialEventVariables() const;
 };
 
 #endif // CONNECTIONMANAGERSERVICE_H

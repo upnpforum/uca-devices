@@ -35,7 +35,7 @@
 #include <QSettings>
 #include <QRegularExpression>
 
-#include <UcaStack/ucautilities.h>
+#include <Stack/ucautilities.h>
 
 static const char *DEVICE_TYPE = "urn:schemas-upnp-org:device:MediaServer:1";
 
